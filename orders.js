@@ -14,7 +14,7 @@ router.get('/', async (req, res) => {
              f.name AS item, oi.quantity, oi.price
       FROM   Order_Item oi
       JOIN   Food_Item  f  ON oi.item_id  = f.item_id
-      JOIN   \`Order\`   o  ON oi.order_id = o.order_id
+      JOIN   \`Orders\`   o  ON oi.order_id = o.order_id
       JOIN   Customer   c  ON o.customer_id = c.customer_id
     `);
     res.json(rows);
@@ -31,7 +31,7 @@ router.get('/summary', async (req, res) => {
       SELECT c.name, SUM(o.total_amount) AS total_spent,
              COUNT(o.order_id) AS total_orders
       FROM   Customer c
-      JOIN   \`Order\` o ON c.customer_id = o.customer_id
+      JOIN   \`Orders\` o ON c.customer_id = o.customer_id
       GROUP  BY c.customer_id
     `);
     res.json(rows);
@@ -59,7 +59,7 @@ router.post('/', async (req, res) => {
 
     // 2. Insert into `Order`
     const [orderResult] = await conn.query(
-      'INSERT INTO `Order` (customer_id, total_amount, status) VALUES (?, ?, ?)',
+      'INSERT INTO `Orders` (customer_id, total_amount, status) VALUES (?, ?, ?)',
       [customer_id, total, 'Pending']
     );
     const order_id = orderResult.insertId;
