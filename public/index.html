@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Food Rush 🍔</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:       #0f0f0f;
+      --surface:  #1a1a1a;
+      --card:     #222222;
+      --accent:   #ff4c00;
+      --gold:     #f5b800;
+      --text:     #f0ece4;
+      --muted:    #888;
+      --border:   #2e2e2e;
+      --radius:   10px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      height: 68px;
+      position: sticky; top: 0; z-index: 100;
+    }
+    header .logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      letter-spacing: 3px;
+      color: var(--accent);
+    }
+    header .logo span { color: var(--gold); }
+    nav { display: flex; gap: 8px; }
+    nav button {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 7px 20px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      letter-spacing: .5px;
+      transition: all .2s;
+    }
+    nav button.active, nav button:hover {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(135deg, #1a1a1a 0%, #110700 100%);
+      padding: 60px 40px 50px;
+      border-bottom: 1px solid var(--border);
+    }
+    .hero h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3rem, 7vw, 6rem);
+      line-height: 1;
+      letter-spacing: 4px;
+    }
+    .hero h1 em { color: var(--accent); font-style: normal; }
+    .hero p { color: var(--muted); margin-top: 12px; font-size: 1rem; font-weight: 300; }
+
+    /* ── MAIN LAYOUT ── */
+    main { display: flex; gap: 0; min-height: calc(100vh - 68px); }
+
+    /* ── SIDEBAR (cart) ── */
+    aside {
+      width: 320px;
+      min-width: 320px;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      padding: 28px 24px;
+      position: sticky; top: 68px;
+      height: calc(100vh - 68px);
+      overflow-y: auto;
+      display: flex; flex-direction: column;
+    }
+    aside h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.4rem;
+      letter-spacing: 2px;
+      margin-bottom: 20px;
+      color: var(--gold);
+    }
+    .cart-empty { color: var(--muted); font-size: .9rem; font-style: italic; }
+    .cart-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: .88rem;
+    }
+    .cart-item .ci-name { font-weight: 500; }
+    .cart-item .ci-meta { color: var(--muted); font-size: .78rem; margin-top: 2px; }
+    .cart-item .ci-price { color: var(--gold); font-weight: 500; white-space: nowrap; }
+    .cart-total {
+      margin-top: 16px;
+      font-size: 1rem;
+      font-weight: 500;
+      display: flex; justify-content: space-between;
+    }
+    .cart-total span:last-child { color: var(--accent); font-size: 1.2rem; font-weight: 700; }
+
+    /* Payment selector */
+    .pay-method {
+      margin-top: 16px;
+      display: flex; gap: 10px;
+    }
+    .pay-method label {
+      flex: 1;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px;
+      cursor: pointer;
+      text-align: center;
+      font-size: .82rem;
+      transition: all .2s;
+    }
+    .pay-method input { display: none; }
+    .pay-method input:checked + span {
+      color: var(--accent);
+    }
+    .pay-method label:has(input:checked) {
+      border-color: var(--accent);
+      background: #ff4c0015;
+    }
+
+    .btn-place {
+      margin-top: 18px;
+      width: 100%;
+      padding: 14px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.1rem;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: opacity .2s, transform .15s;
+    }
+    .btn-place:hover { opacity: .9; transform: translateY(-1px); }
+    .btn-place:disabled { opacity: .4; cursor: not-allowed; }
+
+    /* ── CONTENT AREA ── */
+    .content { flex: 1; padding: 32px 40px; overflow-x: hidden; }
+
+    /* ── TABS ── */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── FILTER BAR ── */
+    .filter-bar {
+      display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 28px;
+    }
+    .filter-btn {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 6px 18px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: .82rem;
+      transition: all .2s;
+    }
+    .filter-btn.active, .filter-btn:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    /* ── MENU GRID ── */
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 20px;
+    }
+    .food-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      transition: border-color .2s, transform .2s;
+      cursor: default;
+    }
+    .food-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .food-card .badge {
+      display: inline-block;
+      font-size: .7rem;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      font-weight: 500;
+      letter-spacing: .5px;
+    }
+    .badge.veg { background: #1a3a1a; color: #4caf50; }
+    .badge.nonveg { background: #3a1a1a; color: #f44336; }
+    .food-card h3 { font-size: 1rem; margin-bottom: 4px; }
+    .food-card .restaurant { color: var(--muted); font-size: .78rem; margin-bottom: 12px; }
+    .food-card .price-row {
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .food-card .price {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.4rem;
+      color: var(--gold);
+      letter-spacing: 1px;
+    }
+    .btn-add {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 6px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: .8rem;
+      font-family: 'DM Sans', sans-serif;
+      transition: opacity .2s;
+    }
+    .btn-add:hover { opacity: .85; }
+
+    /* ── ORDERS TABLE ── */
+    .table-wrap { overflow-x: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .88rem;
+    }
+    th {
+      font-family: 'Bebas Neue', sans-serif;
+      letter-spacing: 1.5px;
+      font-weight: 400;
+      font-size: .9rem;
+      color: var(--muted);
+      text-align: left;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    tr:hover td { background: var(--card); }
+    .status-badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: .75rem;
+      font-weight: 500;
+    }
+    .status-Pending   { background: #2a2400; color: var(--gold); }
+    .status-Preparing { background: #0d2040; color: #60a0ff; }
+    .status-Delivered { background: #0d2a14; color: #4caf50; }
+    .status-Cancelled { background: #2a0f0f; color: #f44336; }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: #222; border: 1px solid var(--accent);
+      color: var(--text); padding: 12px 28px; border-radius: 999px;
+      font-size: .9rem; z-index: 999;
+      opacity: 0; transition: all .3s;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── LOADING ── */
+    .loading { color: var(--muted); padding: 40px 0; text-align: center; font-size: .9rem; }
+    .section-label {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem;
+      letter-spacing: 3px;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Food<span>Rush</span></div>
+  <nav>
+    <button class="active" onclick="switchTab('menu', this)">🍽 Menu</button>
+    <button onclick="switchTab('orders', this)">📋 Orders</button>
+    <button onclick="switchTab('summary', this)">📊 Summary</button>
+  </nav>
+</header>
+
+<div class="hero">
+  <h1>ORDER <em>FASTER,</em><br>EAT BETTER.</h1>
+  <p>Hyderabad's finest — all in one place.</p>
+</div>
+
+<main>
+  <div class="content">
+
+    <!-- ── MENU TAB ── -->
+    <div class="tab-panel active" id="tab-menu">
+      <div class="section-label">Today's Menu</div>
+      <div class="filter-bar">
+        <button class="filter-btn active" onclick="filterMenu('all', this)">All</button>
+        <button class="filter-btn" onclick="filterMenu('Veg', this)">🌿 Veg</button>
+        <button class="filter-btn" onclick="filterMenu('Non-Veg', this)">🍗 Non-Veg</button>
+      </div>
+      <div class="menu-grid" id="menu-grid">
+        <div class="loading">Loading menu…</div>
+      </div>
+    </div>
+
+    <!-- ── ORDERS TAB ── -->
+    <div class="tab-panel" id="tab-orders">
+      <div class="section-label">Order History</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Order #</th><th>Customer</th><th>Item</th>
+              <th>Qty</th><th>Price</th><th>Total</th><th>Status</th><th>Date</th>
+            </tr>
+          </thead>
+          <tbody id="orders-body">
+            <tr><td colspan="8" class="loading">Loading orders…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── SUMMARY TAB ── -->
+    <div class="tab-panel" id="tab-summary">
+      <div class="section-label">Customer Summary</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Customer</th><th>Total Orders</th><th>Total Spent</th></tr>
+          </thead>
+          <tbody id="summary-body">
+            <tr><td colspan="3" class="loading">Loading summary…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── CART SIDEBAR ── -->
+  <aside>
+    <h2>🛒 Your Cart</h2>
+    <div id="cart-items"><p class="cart-empty">Cart is empty.</p></div>
+    <div class="cart-total" id="cart-total" style="display:none">
+      <span>Total</span><span id="total-val">₹0</span>
+    </div>
+
+    <div class="pay-method">
+      <label>
+        <input type="radio" name="pay" value="UPI" checked />
+        <span>📱 UPI</span>
+      </label>
+      <label>
+        <input type="radio" name="pay" value="COD" />
+        <span>💵 COD</span>
+      </label>
+    </div>
+
+    <button class="btn-place" id="btn-place" onclick="placeOrder()" disabled>
+      Place Order
+    </button>
+  </aside>
+</main>
+
+<div id="toast"></div>
+
+<script>
+  /* ──────────────────────────────────────────────────────────
+     State
+  ────────────────────────────────────────────────────────── */
+  // Demo: hardcode customer_id = 1 (Sathvik). In a real app you'd handle auth.
+  const CUSTOMER_ID = 1;
+
+  let allMenu  = [];
+  let cart     = [];  // { item_id, name, price, qty }
+
+  /* ──────────────────────────────────────────────────────────
+     Tab switching
+  ────────────────────────────────────────────────────────── */
+  function switchTab(tab, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    btn.classList.add('active');
+
+    if (tab === 'orders')  loadOrders();
+    if (tab === 'summary') loadSummary();
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     Menu
+  ────────────────────────────────────────────────────────── */
+  async function loadMenu() {
+    try {
+      const res  = await fetch('/api/menu');
+      allMenu    = await res.json();
+      renderMenu(allMenu);
+    } catch {
+      document.getElementById('menu-grid').innerHTML =
+        '<p class="loading">⚠️ Could not load menu. Is the server running?</p>';
+    }
+  }
+
+  function renderMenu(items) {
+    const grid = document.getElementById('menu-grid');
+    if (!items.length) { grid.innerHTML = '<p class="loading">No items found.</p>'; return; }
+    grid.innerHTML = items.map(item => `
+      <div class="food-card">
+        <span class="badge ${item.category === 'Veg' ? 'veg' : 'nonveg'}">
+          ${item.category === 'Veg' ? '🌿 Veg' : '🍗 Non-Veg'}
+        </span>
+        <h3>${item.name}</h3>
+        <p class="restaurant">${item.restaurant}</p>
+        <div class="price-row">
+          <span class="price">₹${item.price}</span>
+          <button class="btn-add" onclick='addToCart(${JSON.stringify(item)})'>+ Add</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function filterMenu(cat, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderMenu(cat === 'all' ? allMenu : allMenu.filter(i => i.category === cat));
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     Cart
+  ────────────────────────────────────────────────────────── */
+  function addToCart(item) {
+    const existing = cart.find(c => c.item_id === item.item_id);
+    if (existing) { existing.qty += 1; }
+    else { cart.push({ item_id: item.item_id, name: item.name, price: item.price, qty: 1 }); }
+    renderCart();
+    toast(`${item.name} added to cart`);
+  }
+
+  function renderCart() {
+    const el = document.getElementById('cart-items');
+    if (!cart.length) {
+      el.innerHTML = '<p class="cart-empty">Cart is empty.</p>';
+      document.getElementById('cart-total').style.display = 'none';
+      document.getElementById('btn-place').disabled = true;
+      return;
+    }
+    el.innerHTML = cart.map(c => `
+      <div class="cart-item">
+        <div>
+          <div class="ci-name">${c.name}</div>
+          <div class="ci-meta">×${c.qty}</div>
+        </div>
+        <div class="ci-price">₹${(c.price * c.qty).toFixed(0)}</div>
+      </div>
+    `).join('');
+    const total = cart.reduce((s, c) => s + c.price * c.qty, 0);
+    document.getElementById('cart-total').style.display = 'flex';
+    document.getElementById('total-val').textContent = `₹${total.toFixed(0)}`;
+    document.getElementById('btn-place').disabled = false;
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     Place Order
+  ────────────────────────────────────────────────────────── */
+  async function placeOrder() {
+    if (!cart.length) return;
+    const method = document.querySelector('input[name="pay"]:checked').value;
+    const body = {
+      customer_id:    CUSTOMER_ID,
+      payment_method: method,
+      items: cart.map(c => ({ item_id: c.item_id, quantity: c.qty, price: c.price })),
+    };
+    try {
+      const res  = await fetch('/api/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const data = await res.json();
+      if (res.ok) {
+        toast(`✅ Order #${data.order_id} placed! Total ₹${data.total}`);
+        cart = [];
+        renderCart();
+      } else {
+        toast(`❌ ${data.error}`);
+      }
+    } catch {
+      toast('❌ Network error — is the server running?');
+    }
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     Orders
+  ────────────────────────────────────────────────────────── */
+  async function loadOrders() {
+    try {
+      const res  = await fetch('/api/orders');
+      const rows = await res.json();
+      const body = document.getElementById('orders-body');
+      if (!rows.length) { body.innerHTML = '<tr><td colspan="8" class="loading">No orders yet.</td></tr>'; return; }
+      body.innerHTML = rows.map(r => `
+        <tr>
+          <td>#${r.order_id}</td>
+          <td>${r.customer}</td>
+          <td>${r.item}</td>
+          <td>${r.quantity}</td>
+          <td>₹${r.price}</td>
+          <td>₹${r.total_amount}</td>
+          <td><span class="status-badge status-${r.status}">${r.status}</span></td>
+          <td>${new Date(r.order_date).toLocaleDateString('en-IN')}</td>
+        </tr>
+      `).join('');
+    } catch { document.getElementById('orders-body').innerHTML = '<tr><td colspan="8" class="loading">⚠️ Server offline.</td></tr>'; }
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     Summary
+  ────────────────────────────────────────────────────────── */
+  async function loadSummary() {
+    try {
+      const res  = await fetch('/api/orders/summary');
+      const rows = await res.json();
+      document.getElementById('summary-body').innerHTML = rows.map(r => `
+        <tr>
+          <td>${r.name}</td>
+          <td>${r.total_orders}</td>
+          <td>₹${Number(r.total_spent).toFixed(0)}</td>
+        </tr>
+      `).join('');
+    } catch { document.getElementById('summary-body').innerHTML = '<tr><td colspan="3" class="loading">⚠️ Server offline.</td></tr>'; }
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     Toast
+  ────────────────────────────────────────────────────────── */
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2800);
+  }
+
+  /* ── Init ── */
+  loadMenu();
+</script>
+</body>
+</html>
